@@ -20,6 +20,18 @@ class VQE:
         of a given Hamiltonian using classical-quantum hybrid optimization.
     """
     def __init__(self, service, instance, token, hamiltonian_list, optimization_level=3, shots=1000):
+        """
+                Initializes the VQE class with the necessary quantum service, backend, and
+                Hamiltonian information.
+
+                Parameters:
+                - service: QiskitRuntimeService object for interacting with IBM Quantum services.
+                - instance: The specific IBM Quantum instance.
+                - token: Authentication token to access IBM Quantum services.
+                - hamiltonian_list: List of Pauli terms defining the Hamiltonian.
+                - optimization_level: Integer representing the optimization level for transpiling circuits (default: 3).
+                - shots: Number of shots (repeated measurements) to be performed per circuit execution (default: 1000).
+        """
         self.service = service
         self.instance = instance
         self.token = token
@@ -31,16 +43,44 @@ class VQE:
         self.cost_history_dict = {"prev_vector": None, "iters": 0, "cost_history": []}
 
     def _select_backend(self):
+        """
+                Selects the least busy IBM Quantum backend with enough qubits and returns it.
+                This ensures that the quantum job is processed faster by using a backend with fewer queued jobs.
+
+                Returns:
+                - backend: The IBM Quantum backend with the least busy queue.
+        """
         service = QiskitRuntimeService(channel='ibm_quantum', instance=self.instance, token=self.token)
         backend = service.least_busy(simulator=False, operational=True, min_num_qubits=100)
         return backend
 
     def _generate_pass_manager(self):
+        """
+               Generates a preset pass manager to optimize the quantum circuit for the selected backend.
+               The pass manager optimizes the circuit by reducing gate depth and improving efficiency.
+
+               Returns:
+               - pm: The preset pass manager object.
+        """
         target = self.backend.target
         pm = generate_preset_pass_manager(target=target, optimization_level=self.optimization_level)
         return pm
 
     def cost_func(self, params, ansatz_isa, hamiltonian_isa, estimator):
+        """
+                The cost function for the VQE optimization. This function estimates the energy
+                for a given set of parameters by executing the ansatz circuit and measuring
+                the energy expectation value of the Hamiltonian.
+
+                Parameters:
+                - params: Array of ansatz parameters to be optimized.
+                - ansatz_isa: Quantum circuit representing the ansatz after pass manager optimizations.
+                - hamiltonian_isa: The Hamiltonian applied with the ansatz layout.
+                - estimator: The EstimatorV2 object used to estimate the energy from the quantum circuit.
+
+                Returns:
+                - energy: The estimated energy value for the given parameters.
+        """
         pub = (ansatz_isa, [hamiltonian_isa], [params])
         result = estimator.run(pubs=[pub]).result()
         energy = result[0].data.evs[0]
@@ -53,6 +93,16 @@ class VQE:
         return energy
 
     def run_vqe(self):
+        """
+                Executes the VQE algorithm. This method:
+                1. Generates the optimized quantum circuit using the pass manager.
+                2. Prepares the Hamiltonian for computation.
+                3. Initializes the optimization process using COBYLA.
+                4. Returns the result of the optimization (minimum eigenvalue of the Hamiltonian).
+
+                Returns:
+                - res: The result of the classical optimizer containing the optimized parameters and minimum energy value.
+        """
         pm = self._generate_pass_manager()
         ansatz_isa = pm.run(self.ansatz)
         hamiltonian_isa = self.hamiltonian.apply_layout(layout=ansatz_isa.layout)
