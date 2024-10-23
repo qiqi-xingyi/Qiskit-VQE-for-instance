@@ -4,8 +4,9 @@
 # @Email : yzhan135@kent.edu
 # @File : test.py
 
-from qiskit_ibm_runtime import QiskitRuntimeService, Session, EstimatorV2 as Estimator
+from qiskit_ibm_runtime import QiskitRuntimeService
 from qiskit_vqe import VQE
+from qiskit.quantum_info import SparsePauliOp
 
 # An example of use
 if __name__ == '__main__':
@@ -18,6 +19,8 @@ if __name__ == '__main__':
 
     hamiltonian_list = [("YZ", 0.3980), ("ZI", -0.3980), ("ZZ", -0.0113), ("XX", 0.1810)]
 
-    vqe = VQE(service=service, hamiltonian = hamiltonian_list)
+    hamiltonian = SparsePauliOp.from_list(hamiltonian_list)
+
+    vqe = VQE(service=service, hamiltonian = hamiltonian)
     result = vqe.run_vqe()
     print("qiskit_vqe Result:", result)
