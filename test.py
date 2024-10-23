@@ -19,7 +19,7 @@ if __name__ == '__main__':
 
     hamiltonian_list = [("YZ", 0.3980), ("ZI", -0.3980), ("ZZ", -0.0113), ("XX", 0.1810)]
 
-    hamiltonian = SparsePauliOp.from_list(hamiltonian_list)
+    hamiltonian = SparsePauliOp.from_list(hamiltonian_list) # Input data need a SparsePauliOp
 
     vqe = VQE(service=service, hamiltonian = hamiltonian)
     result = vqe.run_vqe()

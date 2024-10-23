@@ -6,9 +6,8 @@
 
 import numpy as np
 from qiskit.circuit.library import EfficientSU2
-from qiskit.quantum_info import SparsePauliOp
 from scipy.optimize import minimize
-from qiskit_ibm_runtime import QiskitRuntimeService, Session, EstimatorV2 as Estimator
+from qiskit_ibm_runtime import Session, EstimatorV2 as Estimator
 from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 from qiskit_algorithms import MinimumEigensolverResult
 
