@@ -19,25 +19,21 @@ class VQE:
         ansatz, sets up the optimization process, and computes the minimum eigenvalue
         of a given Hamiltonian using classical-quantum hybrid optimization.
     """
-    def __init__(self, service, instance, token, hamiltonian_list, optimization_level=3, shots=1000):
+    def __init__(self, service, hamiltonian, optimization_level=3, shots=1000):
         """
                 Initializes the VQE class with the necessary quantum service, backend, and
                 Hamiltonian information.
 
                 Parameters:
                 - service: QiskitRuntimeService object for interacting with IBM Quantum services.
-                - instance: The specific IBM Quantum instance.
-                - token: Authentication token to access IBM Quantum services.
-                - hamiltonian_list: List of Pauli terms defining the Hamiltonian.
+                - hamiltonian: Pauli terms defining the Hamiltonian.
                 - optimization_level: Integer representing the optimization level for transpiling circuits (default: 3).
                 - shots: Number of shots (repeated measurements) to be performed per circuit execution (default: 1000).
         """
         self.service = service
-        self.instance = instance
-        self.token = token
         self.shots = shots
         self.backend = self._select_backend()
-        self.hamiltonian = SparsePauliOp.from_list(hamiltonian_list)
+        self.hamiltonian = hamiltonian
         self.ansatz = EfficientSU2(self.hamiltonian.num_qubits)
         self.optimization_level = optimization_level
         self.cost_history_dict = {"prev_vector": None, "iters": 0, "cost_history": []}
@@ -50,8 +46,7 @@ class VQE:
                 Returns:
                 - backend: The IBM Quantum backend with the least busy queue.
         """
-        service = QiskitRuntimeService(channel='ibm_quantum', instance=self.instance, token=self.token)
-        backend = service.least_busy(simulator=False, operational=True, min_num_qubits=100)
+        backend = self.service.least_busy(simulator=False, operational=True, min_num_qubits=50)
         return backend
 
     def _generate_pass_manager(self):
