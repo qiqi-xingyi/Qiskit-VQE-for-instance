@@ -10,6 +10,7 @@ from qiskit.quantum_info import SparsePauliOp
 from scipy.optimize import minimize
 from qiskit_ibm_runtime import QiskitRuntimeService, Session, EstimatorV2 as Estimator
 from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
+from qiskit_algorithms import MinimumEigensolverResult
 
 
 class VQE:
@@ -107,9 +108,18 @@ class VQE:
         with Session(backend=self.backend) as session:
             estimator = Estimator(mode=session)
             estimator.options.default_shots = self.shots
-
             res = minimize(self.cost_func, x0, args=(ansatz_isa, hamiltonian_isa, estimator), method="cobyla")
-        return res
+
+        # Extract the optimized energy and eigenstate
+        energy = res.fun
+        optimal_params = res.x
+
+        # Create and return a MinimumEigensolverResult
+        vqe_result = MinimumEigensolverResult()
+        vqe_result.eigenvalue = energy
+        vqe_result.eigenstate = optimal_params
+
+        return vqe_result
 
 
 
