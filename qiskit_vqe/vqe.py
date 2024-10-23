@@ -13,6 +13,12 @@ from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 
 
 class VQE:
+    """
+        Variational Quantum Eigensolver (VQE) class for performing quantum simulations
+        using Qiskit and the IBM Quantum runtime environment. It defines the quantum
+        ansatz, sets up the optimization process, and computes the minimum eigenvalue
+        of a given Hamiltonian using classical-quantum hybrid optimization.
+    """
     def __init__(self, service, instance, token, hamiltonian_list, optimization_level=3, shots=1000):
         self.service = service
         self.instance = instance
